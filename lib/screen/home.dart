@@ -50,14 +50,43 @@ class _HomeState extends State<Home> {
                 backgroundColor: Color.fromRGBO(6, 102, 142, 1), // Couleur de fond
               ),
               child: Text(
-                "S'inscrire",
+                " S'inscrire ",
                 style: TextStyle(
-                  fontSize: 24,
+                  fontSize: 22,
                   color: Colors.white, // Couleur du texte
                   fontWeight: FontWeight.bold, // Texte en gras
                 ),
               ),
-            )
+            ),
+            SizedBox(height: 10.0),
+            Text("OU",
+                style: TextStyle(
+                  fontSize: 22,
+                  color: Color.fromRGBO(6, 102, 142, 1), // Couleur du texte
+                  fontWeight: FontWeight.bold, // Texte en gras
+                )),
+            SizedBox(height: 10.0),
+            ElevatedButton(
+              onPressed: () {
+                //register();
+              },
+              style: ElevatedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  side: BorderSide(color: Color.fromRGBO(6, 102, 142, 1)),// Ajustez le rayon de la bordure selon vos préférences
+                ),
+                padding: EdgeInsets.symmetric(horizontal: 40.0), // Ajustez la marge intérieure selon vos préférences
+                backgroundColor: Colors.white, // Couleur de fond
+              ),
+              child: Text(
+                "Se connecter",
+                style: TextStyle(
+                  fontSize: 22,
+                  color: Color.fromRGBO(6, 102, 142, 1), // Couleur du texte
+                  fontWeight: FontWeight.bold, // Texte en gras
+                ),
+              ),
+            ),
 
           ],
         ),
@@ -149,17 +178,31 @@ class _HomeState extends State<Home> {
     String password = passwordController.text;
     String confirmPassword = confirmPasswordController.text;
 
-    if (name.isNotEmpty && email.isNotEmpty && selectedOption.isNotEmpty && password.isNotEmpty && confirmPassword.isNotEmpty) {
-      if (password == confirmPassword) {
-        print('Nom Complet: $name');
-        print('Email: $email');
-        print('Option Sélectionnée: $selectedOption');
-        print('Mot de passe: $password');
+    // Expression régulière pour la validation de l'email
+    RegExp emailRegExp = RegExp(
+      r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
+    );
+
+    if (name.isNotEmpty &&
+        email.isNotEmpty &&
+        selectedOption.isNotEmpty &&
+        password.isNotEmpty &&
+        confirmPassword.isNotEmpty) {
+      if (emailRegExp.hasMatch(email)) {
+        if (password == confirmPassword) {
+          print('Nom Complet: $name');
+          print('Email: $email');
+          print('Option Sélectionnée: $selectedOption');
+          print('Mot de passe: $password');
+        } else {
+          print('Les mots de passe ne correspondent pas.');
+        }
       } else {
-        print('Les mots de passe ne correspondent pas.');
+        print('Veuillez saisir une adresse e-mail valide.');
       }
     } else {
       print('Veuillez remplir tous les champs.');
     }
   }
+
 }
