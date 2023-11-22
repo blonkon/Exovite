@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "362103461008",
+    "project_id": "exovite-e1992",
+    "storage_bucket": "exovite-e1992.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:362103461008:android:97306403b8ab80ecda3415",
+        "android_client_info": {
+          "package_name": "com.example.exovite"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfCiERNYplprw-1WeC66pfMmyCrGfjc_k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
