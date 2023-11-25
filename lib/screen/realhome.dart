@@ -1,3 +1,4 @@
+import 'package:exovite/screen/Accueil.dart';
 import 'package:exovite/screen/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -54,7 +55,8 @@ class Realhome extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PersistentTabView(
+    return FirebaseAuth.instance.currentUser != null ?
+      PersistentTabView(
       context,
       controller: _controller,
       screens: _buildScreens(),
@@ -89,7 +91,7 @@ class Realhome extends StatelessWidget {
         duration: Duration(milliseconds: 200),
       ),
       navBarStyle: NavBarStyle.style16, // Choose the nav bar style with this property.
-    );
+    ) : Login();
   }
 }
 
@@ -138,67 +140,3 @@ class CustomTopContainer extends StatelessWidget {
   }
 }
 
-class Accueil extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          height: 150.0, // Hauteur fixe du conteneur en haut
-          decoration: BoxDecoration(
-            color: Color.fromRGBO(6, 102, 142, 1), // Couleur du conteneur
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20.0), // Bordure en bas à gauche
-              bottomRight: Radius.circular(20.0), // Bordure en bas à droite
-            ),
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Color.fromRGBO(235, 242, 250, 1),
-                  child: const Text('A',style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 32,
-                    color: Color.fromRGBO(6, 102, 142, 1),
-                  ),),
-                ),
-              ),
-              Expanded(
-                child:  Text(
-                  'Ravi de vous revoir Diakite',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.0,
-                    fontWeight: FontWeight.normal,
-
-                  ),
-                ),
-              ),
-              Expanded(
-                child: CircleAvatar(
-                  backgroundColor: Color.fromRGBO(235, 242, 250, 1),
-                  child: const Text('AH'),
-                ),
-              ),
-            ],
-          ),
-        ),
-        // Autres widgets que vous souhaitez ajouter en dessous du conteneur
-        Expanded(
-          child: Container(
-            color: Color.fromRGBO(235, 242, 250, 1), // Couleur de fond pour le reste de l'écran
-            child: Center(
-              child: Text(
-                'Contenu en dessous du conteneur',
-                style: TextStyle(fontSize: 18.0),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}

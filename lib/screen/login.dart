@@ -1,8 +1,12 @@
+import 'package:exovite/data/Data.dart';
 import 'package:exovite/screen/home.dart';
 import 'package:exovite/screen/onboarding/screenone.dart';
 import 'package:exovite/screen/realhome.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sn_progress_dialog/options/completed.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 
 class Login extends StatefulWidget {
   @override
@@ -16,7 +20,6 @@ class _HomeState extends State<Login> {
   bool obscureConfirmPassword = true;
   bool echec = false;
   String echecmsg='';
-
 
   @override
   Widget build(BuildContext context) {
@@ -156,7 +159,7 @@ class _HomeState extends State<Login> {
   Future<void> register() async {
     String email = emailController.text;
     String password = passwordController.text;
-
+    ProgressDialog pr = ProgressDialog(context: context);
     // Expression régulière pour la validation de l'email
     RegExp emailRegExp = RegExp(
       r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
@@ -173,17 +176,25 @@ class _HomeState extends State<Login> {
               print(FirebaseAuth.instance.currentUser?.uid);
               //await FirebaseAuth.instance.signOut();
             }
-            final credential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+            pr.show(msg: "En cours.....",barrierColor: Colors.black54,msgColor: Color.fromRGBO(6, 102, 142, 1),progressValueColor: Color.fromRGBO(6, 102, 142, 1) );
+            await FirebaseAuth.instance.signInWithEmailAndPassword(
                 email: email,
                 password: password
             ).then((value) => setState(() {
-              Navigator.push(context, MaterialPageRoute(builder: (context) => Realhome()));
+              Provider.of<Data>(context,listen: false).toinitialstate();
               echec = false;
               echecmsg="";
+              emailController.text = "";
+              passwordController.text = "";
+              pr.close();
             }));
-
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Realhome()),
+            );
             //credential.user.uid ;
           } on FirebaseAuthException catch (e) {
+
             if (e.code == 'user-not-found') {
               print('No user found for that email.');
               setState(() {
@@ -197,6 +208,11 @@ class _HomeState extends State<Login> {
                 echecmsg="Email ou mot de passe invalid";
               });
             }
+            setState(() {
+              echec = true;
+              echecmsg="Email ou mot de passe invalid";
+            });
+            pr.close();
           }
       } else {
         setState(() {

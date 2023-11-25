@@ -1,8 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:exovite/data/Data.dart';
 import 'package:exovite/screen/login.dart';
 import 'package:exovite/screen/realhome.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:sn_progress_dialog/options/completed.dart';
+import 'package:sn_progress_dialog/progress_dialog.dart';
 
 class Home extends StatefulWidget {
   @override
@@ -14,26 +18,9 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     super.initState();
-    initializeFirestore();
-  }
-  List<String> _liste = <String>[' Classe',];
-  Future<void> initializeFirestore() async {
     db = FirebaseFirestore.instance;
-    try {
-      QuerySnapshot querySnapshot = await db.collection("Classe").get();
-      print("Successfully completed");
-      for (var docSnapshot in querySnapshot.docs) {
-        Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
-        String nomValue = data['Nom'];
-
-        print('${docSnapshot.id} => ${nomValue}');
-        _liste.add(nomValue);
-
-      }
-    } catch (e) {
-      print("Error completing: $e");
-    }
   }
+
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
@@ -43,10 +30,12 @@ class _HomeState extends State<Home> {
   bool obscureConfirmPassword = true;
   bool echec = false;
   String echecmsg='';
+  List<String> classe = <String>["Test"];
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return FirebaseAuth.instance.currentUser == null ?
+    Scaffold(
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -66,32 +55,48 @@ class _HomeState extends State<Home> {
             SizedBox(height: 20.0),
             buildInputField('Email', Icons.email, emailController),
             SizedBox(height: 20.0),
-            buildDropdownButtonFormField(),
+            Consumer<Data>(
+              builder: (context, data, child) {
+              return FutureBuilder(
+                  future: data.liste_classe(),
+                  builder: (context, snapshot) {
+                    if(snapshot.connectionState==ConnectionState.waiting){
+                     return buildDropdownButtonFormField(data.classes);
+                    }
+                    if(snapshot.hasError){
+
+                    }
+                    return buildDropdownButtonFormField(snapshot.data!);
+                  },
+              );
+            }),
             SizedBox(height: 20.0),
             buildPasswordInputField('Mot de passe', Icons.lock, passwordController, obscurePassword),
             SizedBox(height: 20.0),
             buildPasswordInputField('Confirmer Mot de passe', Icons.lock, confirmPasswordController, obscureConfirmPassword),
             SizedBox(height: 20.0),
             ElevatedButton(
-              onPressed: () {
-                register();
-              },
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0), // Ajustez le rayon de la bordure selon vos préférences
+                onPressed: () {
+                  register();
+                },
+                style: ElevatedButton.styleFrom(
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0), // Ajustez le rayon de la bordure selon vos préférences
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 40.0), // Ajustez la marge intérieure selon vos préférences
+                  backgroundColor: Color.fromRGBO(6, 102, 142, 1), // Couleur de fond
                 ),
-                padding: EdgeInsets.symmetric(horizontal: 40.0), // Ajustez la marge intérieure selon vos préférences
-                backgroundColor: Color.fromRGBO(6, 102, 142, 1), // Couleur de fond
-              ),
-              child: Text(
-                " S'inscrire ",
-                style: TextStyle(
-                  fontSize: 22,
-                  color: Colors.white, // Couleur du texte
-                  fontWeight: FontWeight.bold, // Texte en gras
+                child: Text(
+                  " S'inscrire ",
+                  style: TextStyle(
+                    fontSize: 22,
+                    color: Colors.white, // Couleur du texte
+                    fontWeight: FontWeight.bold, // Texte en gras
+                  ),
                 ),
               ),
-            ),
+
+
             SizedBox(height: 10.0),
             Text("OU",
                 style: TextStyle(
@@ -125,7 +130,7 @@ class _HomeState extends State<Home> {
           ],
         ),
       ),
-    );
+    ): Realhome();
   }
 
   Widget buildInputField(String label, IconData icon, TextEditingController controller) {
@@ -149,12 +154,12 @@ class _HomeState extends State<Home> {
   }
 
 
-  Widget buildDropdownButtonFormField() {
+  Widget buildDropdownButtonFormField(List<String> data) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.0),
       child: DropdownButtonFormField<String>(
-        value: _liste.first,
-        items: _liste.map((String item) {
+        value: data.firstOrNull ,
+        items:  data.map((String item)   {
           return DropdownMenuItem<String>(
             value: item,
             child: Row(
@@ -185,8 +190,10 @@ class _HomeState extends State<Home> {
           contentPadding: EdgeInsets.symmetric(vertical: 12.0),
         ),
       ),
+
     );
   }
+
 
 
   Widget buildPasswordInputField(String label, IconData icon, TextEditingController controller, bool obscureText) {
@@ -227,12 +234,12 @@ class _HomeState extends State<Home> {
     String email = emailController.text;
     String password = passwordController.text;
     String confirmPassword = confirmPasswordController.text;
+    ProgressDialog pr = ProgressDialog(context: context);
 
     // Expression régulière pour la validation de l'email
     RegExp emailRegExp = RegExp(
       r'^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$',
     );
-
     if (name.isNotEmpty &&
         email.isNotEmpty &&
         selectedOption.isNotEmpty && selectedOption!=" Classe"&&
@@ -245,19 +252,41 @@ class _HomeState extends State<Home> {
           print('Option Sélectionnée: $selectedOption');
           print('Mot de passe: $password');
           try {
-            final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-              email: email,
-              password: password,
-            );
+            pr.show(msg: "En cours.....",barrierColor: Colors.black54,msgColor: Color.fromRGBO(6, 102, 142, 1),progressValueColor: Color.fromRGBO(6, 102, 142, 1) );
+            QuerySnapshot querySnapshot = await db.collection("Classe").where("Nom", isEqualTo: selectedOption).get();
+
+            for (var docSnapshot in querySnapshot.docs) {
+              Map<String, dynamic> data = docSnapshot.data() as Map<String, dynamic>;
+              selectedOption = docSnapshot.id;
+            }
             final data = <String, dynamic>{
               "nom": name,
               "email": email,
-              "classe": selectedOption
+              "classe": selectedOption,
+              "password" : password,
             };
-
-            db.collection("user").doc(credential.user?.uid).set(data, SetOptions(merge: true));
-            Navigator.push(context, MaterialPageRoute(builder: (context) => Realhome()));
+            await FirebaseAuth.instance.createUserWithEmailAndPassword(
+              email: email,
+              password: password,
+            ).then((value) => {
+            db.collection("user").doc(value.user?.uid).set(data, SetOptions(merge: true))
+            });
+            setState(() {
+              echec = false;
+              echecmsg="";
+              nameController.text = "";
+              emailController.text = "";
+              passwordController.text = "";
+              confirmPasswordController.text = "";
+            });
+            pr.close();
+            Provider.of<Data>(context,listen: false).toinitialstate();
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => Realhome()),
+            );
           } on FirebaseAuthException catch (e) {
+            pr.close();
             if (e.code == 'email-already-in-use') {
               print('The account already exists for that email.');
               setState(() {
@@ -271,8 +300,8 @@ class _HomeState extends State<Home> {
                 echecmsg="Mot de passe faible ";
               });
             }
-
           } catch (e) {
+            pr.close();
             setState(() {
               echec = true;
               echecmsg="Donnee invalid";
