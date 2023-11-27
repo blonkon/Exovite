@@ -186,6 +186,7 @@ class _HomeState extends State<Login> {
               echecmsg="";
               emailController.text = "";
               passwordController.text = "";
+              Provider.of<Data>(context,listen: false).maclasses();
               pr.close();
             }));
             Navigator.pushReplacement(
