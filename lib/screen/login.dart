@@ -180,19 +180,39 @@ class _HomeState extends State<Login> {
             await FirebaseAuth.instance.signInWithEmailAndPassword(
                 email: email,
                 password: password
-            ).then((value) => setState(() {
-              Provider.of<Data>(context,listen: false).toinitialstate();
-              echec = false;
-              echecmsg="";
-              emailController.text = "";
-              passwordController.text = "";
-              Provider.of<Data>(context,listen: false).maclasses();
-              pr.close();
-            }));
+            ).then((value) async => {
+            if(value.user!.emailVerified){
+                setState(() {
+                Provider.of<Data>(context,listen: false).toinitialstate();
+                echec = false;
+                echecmsg="";
+                emailController.text = "";
+                passwordController.text = "";
+                Provider.of<Data>(context,listen: false).maclasses();
+                pr.close();
+              }),
+                Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(builder: (context) => Realhome()))
+                }
+            else{
             Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => Realhome()),
-            );
+            context,
+            MaterialPageRoute(builder: (context) => Login()),
+            ),
+            await FirebaseAuth.instance.signOut(),
+              setState(() {
+                Provider.of<Data>(context,listen: false).toinitialstate();
+                echec = true;
+                echecmsg="Email non verifier";
+                emailController.text = "";
+                passwordController.text = "";
+                pr.close();
+              }),
+            },
+
+            });
+
             //credential.user.uid ;
           } on FirebaseAuthException catch (e) {
 

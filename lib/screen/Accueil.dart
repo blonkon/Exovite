@@ -1,5 +1,9 @@
+import 'dart:math';
+
 import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:exovite/common/Classe.dart';
 import 'package:exovite/data/Data.dart';
 import 'package:exovite/screen/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -116,7 +120,81 @@ class Accueil extends StatelessWidget {
             Consumer<Data>(
               builder: (context, data, child) {
                 return FutureBuilder(future: data.maclasses(), builder: (context, snapshot) {
-                return CarouselSlider(
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15.0),
+                        border: Border.all(
+                          color: Color(0xFF06668E),
+                          width: 1.0,
+                        ),
+                        color: Color(0xFF06668E),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.25),
+                            offset: Offset(0, 7),
+                            blurRadius: 15.0,
+                          ),
+                        ],
+                      ),
+                      width: MediaQuery.of(context).size.width,
+                      margin: EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    SizedBox(height: 20,),
+                                    CustomTextWidget(text: "Matieres"),
+                                    SizedBox(height: 10,),
+                                    CustomTextWidget2(text: "Cet Sujet est fortement recommandée par nos enseignants "),
+                                    SizedBox(height: 20,),
+                                    GestureDetector(
+                                      onTap: () {
+                                        // Action à effectuer lorsqu'on appuie sur le conteneur
+                                      },
+                                      child: Container(
+                                        padding: EdgeInsetsDirectional.symmetric(horizontal: 5),
+                                        height: 22.0,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(20.0),
+                                          color: Colors.white,
+                                        ),
+                                        child: Center(
+                                          // Votre contenu à l'intérieur du conteneur, par exemple, du texte
+                                            child: Row(
+                                              children: [
+                                                Text(
+                                                  'Telecharger',
+                                                  style: TextStyle(
+                                                      color: Color(0xFF06668E),
+                                                      fontSize: 10,
+                                                      decoration: TextDecoration.none
+                                                  ),
+                                                ),
+                                                Icon(Icons.download_outlined,color: Color(0xFF06668E),)
+                                              ],
+                                            )
+                                        ),
+                                      ),
+                                    )
+                                  ]
+                              ),
+                              Image.asset("asset/book.png", width: 100, height: 100),
+                            ],
+                          ),
+
+                        ],
+                      ),
+                    );
+                  }
+                  return
+                    CarouselSlider(
                   options: CarouselOptions(height: MediaQuery.of(context).size.height*0.2),
                   items: data.maClasse.Matieres.map((item) {
                     return CustomCarouselItem(title: item.nom, imagePath: item.img,);
@@ -124,23 +202,48 @@ class Accueil extends StatelessWidget {
                 );
               } );
             }),
-            Container(
-              color: Color.fromRGBO(235, 242, 250, 1), // Couleur de fond pour le reste de l'écran
-              child: Center(
-                child: TextButton(
-
-                  onPressed: () async {
-                    await FirebaseAuth.instance.signOut();
-                    pushNewScreen<dynamic>(
-                      context,
-                      screen: Login(),
-                      withNavBar: false,
-                    );
-                  }
-                  , child: Text('Deconnecter'),
-                ),
+            SizedBox(height: 10.0),
+            Text("  Matieres",
+              style: TextStyle(
+                color: Colors.black,
+                decoration: TextDecoration.none,
+                fontFamily: 'Poppins',
+                fontSize: 20.0,
+                fontStyle: FontStyle.normal,
+                fontWeight: FontWeight.w700,
+                height: 1.2, // La hauteur de ligne (line-height en CSS)
               ),
             ),
+            //matiere
+            Consumer<Data>(
+                builder: (context, data, child) {
+                  return FutureBuilder(future: data.maclasses(), builder: (context, snapshot) {
+                    List<Matiere> mesmatiere = List.of(data.maClasse.Matieres);
+                    Matiere toutMatiere = Matiere('Tout', 'Le tout ', 'asset/book.png');
+                    mesmatiere.insert(0, toutMatiere);
+                    if(snapshot.connectionState==ConnectionState.waiting){
+                      CircularProgressIndicator();
+                    }
+                    return
+                      Listhori(matieres: mesmatiere,);
+                  } );
+                }),
+            Text("  Sujet envoyes",
+              style: TextStyle(
+                color: Colors.black,
+                decoration: TextDecoration.none,
+                fontFamily: 'Poppins',
+                fontSize: 20.0,
+                fontStyle: FontStyle.normal,
+                fontWeight: FontWeight.w700,
+                height: 1.2, // La hauteur de ligne (line-height en CSS)
+              ),
+            ),
+            SingleChildScrollView(
+              child: UserInformation(),
+            )
+
+
         ],
         )
         ),
@@ -280,7 +383,35 @@ class CustomCarouselItem extends StatelessWidget {
                        SizedBox(height: 10,),
                        CustomTextWidget2(text: "Cet Sujet est fortement recommandée par nos enseignants "),
                        SizedBox(height: 20,),
-                       Image.asset("asset/telechage.png")
+                        GestureDetector(
+                          onTap: () {
+                // Action à effectuer lorsqu'on appuie sur le conteneur
+                             },
+                          child: Container(
+                            padding: EdgeInsetsDirectional.symmetric(horizontal: 5),
+                            height: 22.0,
+                            decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20.0),
+                            color: Colors.white,
+                             ),
+                             child: Center(
+                               // Votre contenu à l'intérieur du conteneur, par exemple, du texte
+                                child: Row(
+                                  children: [
+                                    Text(
+                                      'Telecharger',
+                                      style: TextStyle(
+                                        color: Color(0xFF06668E),
+                                        fontSize: 10,
+                                        decoration: TextDecoration.none
+                                      ),
+                                    ),
+                                    Icon(Icons.download_outlined,color: Color(0xFF06668E),)
+                                  ],
+                                )
+                              ),
+                              ),
+                            )
                      ]
                    ),
                   Image.network(imagePath, width: 100, height: 100),
@@ -294,3 +425,200 @@ class CustomCarouselItem extends StatelessWidget {
     );
   }
 }
+
+//pour le button telecharger
+class CustomContainer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        // Action à effectuer lorsqu'on appuie sur le conteneur
+      },
+      child: Container(
+        width: 106.7,
+        height: 22.0,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20.0),
+          color: Colors.white,
+        ),
+        child: Center(
+          // Votre contenu à l'intérieur du conteneur, par exemple, du texte
+          child: Text(
+            'Telecharger',
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 12.0,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class Listhori extends StatelessWidget {
+  final List<int> warmColors = [
+    0xFFEF5350,
+    0xFFEC407A,
+    0xFFAB47BC,
+    0xFF7E57C2,
+    0xFF5C6BC0,
+    0xFF42A5F5,
+    0xFF29B6F6,
+    0xFF26C6DA,
+    0xFF26A69A,
+    0xFF66BB6A,
+    0xFF9CCC65,
+    0xFFFFEE58,
+    0xFFFFCA28,
+    0xFFFFA726,
+    0xFF8D6E63,
+    0xFF78909C,
+    0xFF90A4AE,
+    0xFFCFD8DC,
+    0xFF455A64,
+    0xFFD32F2F,
+    0xFFE57373,
+    0xFFF06292,
+    0xFFBA68C8,
+    0xFF9575CD,
+    0xFF7986CB,
+    0xFF64B5F6,
+    0xFF4FC3F7,
+    0xFF4DD0E1,
+    0xFF4DB6AC,
+    0xFF81C784,
+    0xFFAED581,
+    0xFFFFD54F,
+    0xFFFFB74D,
+    0xFFFF8A65,
+    0xFFA1887F,
+    0xFF90A4AE,
+    0xFFB0BEC5,
+    0xFFCFD8DC,
+    0xFF607D8B,
+  ];
+  List<Matiere> matieres;
+  Color getRandomColor() {
+    Random random = Random();
+    return Color(warmColors[random.nextInt(warmColors.length)]);
+  }
+  Listhori({required this.matieres});
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(vertical: 10.0, horizontal: 10.0),
+      height: 100,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount:  matieres.length,
+        itemBuilder: (BuildContext context, int index) {
+          Matiere matiere = matieres[index];
+          return Column(
+            children: [
+              Container(
+                margin: EdgeInsets.symmetric(horizontal: 6.0),
+                height: 64.0,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20.0),
+                  color: getRandomColor(),
+                ),
+                child: matiere.img.startsWith('asset/') // Vérifiez si l'image provient d'asset
+                    ? Image.asset(matiere.img,) // Chargez l'image d'asset
+                    : Image.network(matiere.img, width: 62, height: 62),
+              ),
+              SizedBox(height: 5,),
+              Padding(
+                padding: EdgeInsetsDirectional.only(top: 5),
+                child: Text(
+              matiere.nom,
+              style: TextStyle(
+          color: Colors.black,
+          fontFamily: 'Poppins',
+          decoration: TextDecoration.none,
+          fontSize: 12.0,
+          fontStyle: FontStyle.normal,
+          fontWeight: FontWeight.w400,
+          ),
+          ),
+              ),
+
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+
+class UserInformation extends StatefulWidget {
+  @override
+  _UserInformationState createState() => _UserInformationState();
+}
+
+class _UserInformationState extends State<UserInformation> {
+  final Stream<QuerySnapshot> _usersStream =
+  FirebaseFirestore.instance.collection('sujetenvoye').doc(FirebaseAuth.instance.currentUser?.uid).collection("messujet").where("status", isNotEqualTo: -1).snapshots();
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<QuerySnapshot>(
+      stream: _usersStream,
+      builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return const Text('Un probleme');
+        }
+
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator();
+        }
+
+        return snapshot.data!.docs.isEmpty ? Center(
+          child: Image.asset("asset/empt.png",width: 200,height: 200,),
+        ) : Material(
+          child: Container(
+            color: Color.fromRGBO(235, 242, 250, 1),
+            height: 200,
+            // Set a fixed height or use other constraints
+            child: ListView.builder(
+              itemCount: snapshot.data!.docs.length,
+              itemBuilder: (BuildContext context, int index) {
+                Map<String, dynamic> data =
+                snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                return  Container(
+                    margin: EdgeInsetsDirectional.only(start: 10,end: 10,bottom: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white, // Couleur de fond du Container
+                      border: Border.all(color: Color(0xFF06668E)), // Couleur de la bordure
+                      borderRadius: BorderRadius.circular(10.0), // Ajustez le rayon de la bordure selon vos besoins
+                    ),
+                child: data['status'] == 0
+                ? ListTile(
+                leading: Icon(Icons.file_open, color: Color(0xFF06668E)),
+                title: Text(data['nom']),
+                trailing: Icon(Icons.close, color: Colors.redAccent),
+                )
+                    : data['status'] == 1
+                ? ListTile(
+                leading: Icon(Icons.file_open, color: Color(0xFF06668E)),
+                title: Text(data['nom']),
+                trailing: Icon(Icons.circle_outlined, color: Color(0xFF06668E)),
+                )
+                    :
+                ListTile(
+                leading: Icon(Icons.file_open, color: Color(0xFF06668E)),
+                title: Text(data['nom']),
+                trailing: Icon(Icons.download, color: Color(0xFF06668E)),
+                ));
+              },
+            ),
+          ),
+        ) ;
+      },
+    );
+  }
+}
+
+
+

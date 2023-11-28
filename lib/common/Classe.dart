@@ -10,3 +10,10 @@ class Matiere {
   final String img;
   Matiere(this.nom, this.recommandation, this.img);
 }
+
+class Sujet {
+  final String nom;
+  final String correction;
+  final int status;
+  Sujet(this.nom, this.correction, this.status);
+}

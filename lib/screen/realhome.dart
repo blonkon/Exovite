@@ -1,4 +1,5 @@
 import 'package:exovite/screen/Accueil.dart';
+import 'package:exovite/screen/Profile.dart';
 import 'package:exovite/screen/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,7 +14,7 @@ class Realhome extends StatelessWidget {
       CustomTopContainer(),
       CustomTopContainer(),
       CustomTopContainer(),
-      CustomTopContainer()
+      Profile()
     ];
   }
   List<PersistentBottomNavBarItem> _navBarsItems() {

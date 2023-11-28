@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exovite/data/Data.dart';
+import 'package:exovite/screen/emailverificationpage.dart';
 import 'package:exovite/screen/login.dart';
 import 'package:exovite/screen/realhome.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -265,12 +266,21 @@ class _HomeState extends State<Home> {
               "classe": selectedOption,
               "password" : password,
             };
+            final data1 = <String,dynamic>{
+              "nom":"",
+              "correction":"",
+              "status":-1
+            };
             await FirebaseAuth.instance.createUserWithEmailAndPassword(
               email: email,
               password: password,
-            ).then((value) => {
-            db.collection("user").doc(value.user?.uid).set(data, SetOptions(merge: true))
+            ).then((value) async => {
+            await FirebaseAuth.instance.setLanguageCode("fr"),
+              await value.user?.sendEmailVerification(),
+            db.collection("user").doc(value.user?.uid).set(data, SetOptions(merge: true)),
+              db.collection("sujetenvoye").doc(value.user?.uid).collection("messujet").add(data1)
             });
+            await FirebaseAuth.instance.signOut();
             setState(() {
               echec = false;
               echecmsg="";
@@ -283,7 +293,7 @@ class _HomeState extends State<Home> {
             Provider.of<Data>(context,listen: false).toinitialstate();
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => Realhome()),
+              MaterialPageRoute(builder: (context) => Verif()),
             );
           } on FirebaseAuthException catch (e) {
             pr.close();

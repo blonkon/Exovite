@@ -80,6 +80,7 @@ flutter:
   assets:
     - asset/logo.png
     - asset/telechage.png
+    - asset/
     - asset/screen.mp4
     - asset/onboarding/
     - asset/splash.gif
