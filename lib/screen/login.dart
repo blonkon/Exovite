@@ -188,8 +188,11 @@ class _HomeState extends State<Login> {
                 echecmsg="";
                 emailController.text = "";
                 passwordController.text = "";
-                Provider.of<Data>(context,listen: false).maclasses();
-                pr.close();
+                Provider.of<Data>(context,listen: false).updateme().then((value) => (){
+                  Provider.of<Data>(context,listen: false).maclasses().then((value) => (){
+                    pr.close();
+                  });
+                });
               }),
                 Navigator.pushReplacement(
                 context,

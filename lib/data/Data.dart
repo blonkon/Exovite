@@ -1,6 +1,3 @@
-
-import 'dart:ffi';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exovite/common/Classe.dart';
 import 'package:exovite/common/Usere.dart';

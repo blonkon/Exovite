@@ -195,8 +195,6 @@ class _HomeState extends State<Home> {
     );
   }
 
-
-
   Widget buildPasswordInputField(String label, IconData icon, TextEditingController controller, bool obscureText) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.0),

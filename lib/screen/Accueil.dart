@@ -7,6 +7,7 @@ import 'package:exovite/common/Classe.dart';
 import 'package:exovite/data/Data.dart';
 import 'package:exovite/screen/login.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -586,6 +587,7 @@ class _UserInformationState extends State<UserInformation> {
               itemBuilder: (BuildContext context, int index) {
                 Map<String, dynamic> data =
                 snapshot.data!.docs[index].data() as Map<String, dynamic>;
+                var data1 = snapshot.data!.docs[index];
                 return  Container(
                     margin: EdgeInsetsDirectional.only(start: 10,end: 10,bottom: 10),
                     decoration: BoxDecoration(
@@ -597,7 +599,35 @@ class _UserInformationState extends State<UserInformation> {
                 ? ListTile(
                 leading: Icon(Icons.file_open, color: Color(0xFF06668E)),
                 title: Text(data['nom']),
-                trailing: Icon(Icons.close, color: Colors.redAccent),
+                trailing: IconButton( onPressed: (
+                    ) async {
+                  bool? deleteConfirmed = await _showDeleteConfirmationDialog(context);
+                  // Supprimer l'élément seulement si l'utilisateur a confirmé
+                  if(deleteConfirmed==null){
+
+                  }else{
+                    if (deleteConfirmed) {
+                      print("l'id du sujet " + data1.id);
+                      var db = FirebaseFirestore.instance;
+                      db.collection("sujetenvoye").doc(FirebaseAuth.instance.currentUser?.uid).collection("messujet").doc(data1.id).delete().then(
+                            (doc) => () async {
+                              final storageRef = FirebaseStorage.instance.ref();
+                              final desertRef = storageRef.child("sujetenvoye/"+data1.id+"."+data['extension']);
+                              await desertRef.delete();
+                              print("Document deleted");
+                              },
+
+                        onError: (e) => print("Error updating document $e"),
+                      );
+
+
+                    }
+                  }
+
+                  }, icon: Icon(
+                  Icons.close, // Choisissez une icône appropriée
+                  color: Colors.redAccent,
+                ) ,),
                 )
                     : data['status'] == 1
                 ? ListTile(
@@ -621,4 +651,46 @@ class _UserInformationState extends State<UserInformation> {
 }
 
 
+
+Future<bool?> _showDeleteConfirmationDialog(BuildContext context) async {
+  return await showDialog<bool>(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(15.0),
+        ),
+        elevation: 5.0,
+        content: Text("Voulez-vous vraiment annuler la correction ?"),
+        actions: [
+
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(true); // Confirmer la suppression
+            },
+            style: ElevatedButton.styleFrom(
+              primary: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+            ),
+            child: Text("Oui",style: TextStyle(color: Colors.red),),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop(false); // Confirmer la suppression
+            },
+            style: ElevatedButton.styleFrom(
+              primary: Color(0xFF06668E),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15.0),
+              ),
+            ),
+            child: Text("Non",style: TextStyle(color: Colors.white),),
+          ),
+        ],
+      );
+    },
+  );
+}
 
