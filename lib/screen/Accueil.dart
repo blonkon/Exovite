@@ -1,17 +1,19 @@
 import 'dart:math';
+import 'dart:io';
 
 import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exovite/common/Classe.dart';
 import 'package:exovite/data/Data.dart';
-import 'package:exovite/screen/login.dart';
+import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
-import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
+
 
 class Accueil extends StatelessWidget {
 
@@ -639,7 +641,37 @@ class _UserInformationState extends State<UserInformation> {
                 ListTile(
                 leading: Icon(Icons.file_open, color: Color(0xFF06668E)),
                 title: Text(data['nom']),
-                trailing: Icon(Icons.download, color: Color(0xFF06668E)),
+                trailing: IconButton( onPressed: () async {
+
+                  final storageRef = FirebaseStorage.instance.ref();
+
+                  final httpsReference = FirebaseStorage.instance.refFromURL(data['url']);
+
+                  final appDocDir = await getApplicationDocumentsDirectory();
+                  final filePath = "${appDocDir.absolute}/download/";
+
+                  final downloadTask = httpsReference.writeToFile(File(filePath));
+                  downloadTask.snapshotEvents.listen((taskSnapshot) {
+                    switch (taskSnapshot.state) {
+                      case TaskState.running:
+                      // TODO: Handle this case.
+                        break;
+                      case TaskState.paused:
+                      // TODO: Handle this case.
+                        break;
+                      case TaskState.success:
+                      // TODO: Handle this case.
+                        break;
+                      case TaskState.canceled:
+                      // TODO: Handle this case.
+                        break;
+                      case TaskState.error:
+                      // TODO: Handle this case.
+                        break;
+                    }
+                  });
+                  }
+                , icon: Icon( Icons.download, color: Color(0xFF06668E),)),
                 ));
               },
             ),
@@ -693,4 +725,9 @@ Future<bool?> _showDeleteConfirmationDialog(BuildContext context) async {
     },
   );
 }
+
+
+
+
+
 
