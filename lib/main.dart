@@ -1,3 +1,4 @@
+import 'package:exovite/common/DirectoryPath.dart';
 import 'package:exovite/data/Data.dart';
 import 'package:exovite/screen/login.dart';
 import 'package:exovite/screen/onboarding/screenone.dart';
@@ -25,7 +26,8 @@ Future<void> main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context)=>Data())
+        ChangeNotifierProvider(create: (context)=>Data()),
+        ChangeNotifierProvider(create: (context)=>DirectoryPath())
       ],
       child: MyApp(firstTime: val),
     )

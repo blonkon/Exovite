@@ -1,16 +1,22 @@
 import 'dart:math';
 import 'dart:io';
 
+
 import 'package:carousel_slider/carousel_options.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
+import 'package:exovite/common/CheckPermission.dart';
 import 'package:exovite/common/Classe.dart';
+import 'package:exovite/common/DirectoryPath.dart';
 import 'package:exovite/data/Data.dart';
+import 'package:path/path.dart' as Path;
 import 'package:http/http.dart' as http;
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -294,6 +300,7 @@ String firstword(String phrase) {
   return '';
 }
 
+
 class CustomTextWidget extends StatelessWidget {
   final String text;
 
@@ -561,6 +568,23 @@ class UserInformation extends StatefulWidget {
 }
 
 class _UserInformationState extends State<UserInformation> {
+  bool isPermission = false;
+  //pour verifier les permission
+  var checkAllPermissions = CheckPermission();
+
+  checkPermission() async {
+    var permission = await checkAllPermissions.isStoragePermission();
+    if (permission) {
+      setState(() {
+        isPermission = true;
+      });
+    }
+  }
+  void initState() {
+    super.initState();
+    checkPermission();
+  }
+
   final Stream<QuerySnapshot> _usersStream =
   FirebaseFirestore.instance.collection('sujetenvoye').doc(FirebaseAuth.instance.currentUser?.uid).collection("messujet").where("status", isNotEqualTo: -1).snapshots();
 
@@ -638,47 +662,142 @@ class _UserInformationState extends State<UserInformation> {
                 trailing: Icon(Icons.circle_outlined, color: Color(0xFF06668E)),
                 )
                     :
-                ListTile(
-                leading: Icon(Icons.file_open, color: Color(0xFF06668E)),
-                title: Text(data['nom']),
-                trailing: IconButton( onPressed: () async {
-
-                  final storageRef = FirebaseStorage.instance.ref();
-
-                  final httpsReference = FirebaseStorage.instance.refFromURL(data['url']);
-
-                  final appDocDir = await getApplicationDocumentsDirectory();
-                  final filePath = "${appDocDir.absolute}/download/";
-
-                  final downloadTask = httpsReference.writeToFile(File(filePath));
-                  downloadTask.snapshotEvents.listen((taskSnapshot) {
-                    switch (taskSnapshot.state) {
-                      case TaskState.running:
-                      // TODO: Handle this case.
-                        break;
-                      case TaskState.paused:
-                      // TODO: Handle this case.
-                        break;
-                      case TaskState.success:
-                      // TODO: Handle this case.
-                        break;
-                      case TaskState.canceled:
-                      // TODO: Handle this case.
-                        break;
-                      case TaskState.error:
-                      // TODO: Handle this case.
-                        break;
-                    }
-                  });
-                  }
-                , icon: Icon( Icons.download, color: Color(0xFF06668E),)),
-                ));
+                TileList(fileUrl: data['correction'], title: data['nom'],));
               },
             ),
           ),
         ) ;
       },
     );
+  }
+}
+
+
+class TileList extends StatefulWidget {
+  TileList({super.key, required this.fileUrl, required this.title});
+  final String fileUrl;
+  final String title;
+
+  @override
+  State<TileList> createState() => _TileListState();
+}
+
+class _TileListState extends State<TileList> {
+  bool dowloading = false;
+  bool finish = false;
+  bool fileExists = false;
+  double progress = 0;
+  String fileName = "";
+  String nom = "";
+  late String filePath;
+  late CancelToken cancelToken;
+  var getPathFile = DirectoryPath();
+
+  startDownload() async {
+    cancelToken = CancelToken();
+    var storePath = await getPathFile.getPath();
+    filePath = await getAvailableFileName(storePath, nom);
+    setState(() {
+      dowloading = true;
+      progress = 0;
+    });
+
+    try {
+      await Dio().download(widget.fileUrl, filePath,
+          onReceiveProgress: (count, total) {
+            setState(() {
+              progress = (count / total);
+            });
+          }, cancelToken: cancelToken);
+      setState(() {
+        dowloading = false;
+        fileExists = true;
+        finish = true;
+      });
+      DirectoryPath getPathFiles(BuildContext context) {
+        return Provider.of<DirectoryPath>(context, listen: false);
+      }
+      getPathFiles(context).notify();
+    } catch (e) {
+      print(e);
+      setState(() {
+        dowloading = false;
+      });
+    }
+  }
+  Future<String> getAvailableFileName(String basePath, String desiredName) async {
+    int suffix = 1;
+    String fileName = '$basePath/$desiredName';
+
+    while (await File(fileName).exists()) {
+      suffix++;
+      fileName = '$basePath/$desiredName $suffix';
+    }
+
+    return fileName;
+  }
+
+  cancelDownload() {
+    cancelToken.cancel();
+    setState(() {
+      dowloading = false;
+    });
+  }
+
+  checkFileExit() async {
+    var storePath = await getPathFile.getPath();
+    filePath = '$storePath/+$nom';
+    bool fileExistCheck = await File(filePath).exists();
+    setState(() {
+      fileExists = fileExistCheck;
+    });
+  }
+
+  openfile() {
+    OpenFile.open(filePath);
+    print("fff $filePath");
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    setState(() {
+      fileName = Path.basename(widget.fileUrl);
+      nom = widget.title;
+    });
+    checkFileExit();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+          title: Text(widget.title),
+          leading: Icon(Icons.file_open,color: Color(0xFF06668E)),
+          trailing: IconButton(
+              onPressed: () {
+                startDownload();
+              },
+              icon : dowloading
+                  ? Stack(
+                      alignment: Alignment.center,
+                      children: [
+                      CircularProgressIndicator(
+                      value: progress,
+                      strokeWidth: 3,
+                      backgroundColor: Colors.grey,
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                          Color(0xFF06668E)),
+                  ),
+                    Text(
+                    "${(progress * 100).toStringAsFixed(2)}",
+                    style: TextStyle(fontSize: 12),
+                  )
+                ],
+              )
+                  : finish==false ? Icon((Icons.download),color : Color(0xFF06668E)) : Icon((Icons.download),color : Colors.green)
+    )
+    )
+      ;
   }
 }
 

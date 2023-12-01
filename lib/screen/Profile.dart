@@ -1,118 +1,151 @@
-import 'package:exovite/screen/login.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:exovite/data/Data.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:persistent_bottom_nav_bar_v2/persistent-tab-view.dart';
+import 'package:provider/provider.dart';
 
 class Profile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      height: double.infinity,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(color: Colors.white),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Container(
-            height: 267,
-            decoration: BoxDecoration(
-              color: Color(0xFF06668E),
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(40),
-                bottomRight: Radius.circular(40),
-              ),
-            ),
+        width: MediaQuery.of(context).size.width,
+        height: MediaQuery.of(context).size.height/2,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(color: Colors.white),
+    child: Stack(
+      children: [
+        Container(
+        width: MediaQuery.of(context).size.width,
+        height: 267,
+        decoration: BoxDecoration(
+        color: Color(0xFF06668E),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+            child: Center(
+              child: Text('Mon Profil',
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 20,
+            decoration: TextDecoration.none,
+            fontFamily: 'Poppins',
+            fontWeight: FontWeight.w400,
           ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'Mon profil',
-              style: TextStyle(
-                color: Colors.white,
+        ),
+      ),
+    ),
+    Positioned(
+    left: MediaQuery.of(context).size.width*0.1,
+    top: 160,
+      child: Container(
+          width: MediaQuery.of(context).size.width*0.8,
+          height: 240,
+          decoration: BoxDecoration(
+          color: Color(0xFFEBF2FA),
+            borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+            color: Color(0x3F000000),
+              blurRadius: 4,
+              offset: Offset(6, 6),
+              spreadRadius: 0,
+            ),],),
+        child: Consumer<Data>(builder : (context,data,child) {
+          return Column(
+            children: [
+              Icon(Icons.person,color: Color(0xFF06668E),size: 100 ,),
+              Text(data.me.nom,style: TextStyle(
+                color: Colors.black,
+                decoration: TextDecoration.none,
                 fontSize: 20,
                 fontFamily: 'Poppins',
                 fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Color(0xFFEBF2FA),
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Color(0x3F000000),
-                  blurRadius: 4,
-                  offset: Offset(6, 6),
-                  spreadRadius: 0,
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Ibrahim B Diakite',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 20,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                Text(
-                  'Terminale Sciences Exactes',
-                  style: TextStyle(
-                    color: Color(0xFF5A5A5A),
-                    fontSize: 16,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w400,
-                  ),
-                ),
-                Text(
-                  'Diakiteibrahimblonkon@gmail.com',
-                  style: TextStyle(
-                    color: Color(0xFF5A5A5A),
-                    fontSize: 10,
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.w400,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              // Action à effectuer lors du clic sur le bouton
-              FirebaseAuth.instance.signOut();
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (context) => Login()),
-              );
-            },
-            style: ElevatedButton.styleFrom(
-              primary: Color(0xFF06668E),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
-              ),
-            ),
-            child: Text(
-              'Abonnement',
-              style: TextStyle(
-                color: Colors.white,
+                height: 0,
+              ),),
+              SizedBox(height: 10),
+              Text(data.me.classe,style: TextStyle(
+                color: Colors.black,
+                decoration: TextDecoration.none,
+                fontSize: 20,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w400,
+                height: 0,
+              ),),
+              SizedBox(height: 10),
+              Text(data.me.email,style: TextStyle(
+                color: Color(0x3F000000),
+                decoration: TextDecoration.none,
                 fontSize: 18,
                 fontFamily: 'Poppins',
-                fontWeight: FontWeight.w700,
-              ),
-            ),
+                fontWeight: FontWeight.w400,
+                height: 0,
+              ),),
+              SizedBox(height: 10),
+              Text("Compte gratuit",style: TextStyle(
+                color: Colors.black,
+                decoration: TextDecoration.none,
+                fontSize: 12,
+                fontFamily: 'Poppins',
+                fontWeight: FontWeight.w400,
+                height: 0,
+              ),),
+            ],
+          );
+        })
+    ),
+    )
+      ],
+    ));
+  }
+}
+
+
+Widget _buildHeader() {
+  return Container(
+    width: 430,
+    height: 267,
+    decoration: BoxDecoration(
+      color: Color(0xFF06668E),
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.circular(40),
+        bottomRight: Radius.circular(40),
+      ),
+    ),
+    child: Center(
+      child: Text(
+        'Mon Profil',
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 20,
+          decoration: TextDecoration.none,
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildUserInfo() {
+  return Positioned(
+    left: 57,
+    top: 134,
+    child: Container(
+      width: 316,
+      height: 258,
+      decoration: BoxDecoration(
+        color: Color(0xFFEBF2FA),
+        borderRadius: BorderRadius.circular(15),
+        boxShadow: [
+          BoxShadow(
+            color: Color(0x3F000000),
+            blurRadius: 4,
+            offset: Offset(6, 6),
+            spreadRadius: 0,
           ),
-          // Autres éléments de l'interface...
         ],
       ),
-    );
-  }
+    ),
+  );
 }

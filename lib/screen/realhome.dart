@@ -6,7 +6,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:exovite/common/Classe.dart';
 import 'package:exovite/data/Data.dart';
 import 'package:exovite/screen/Accueil.dart';
+import 'package:exovite/screen/Download.dart';
 import 'package:exovite/screen/Profile.dart';
+import 'package:exovite/screen/banque.dart';
 import 'package:exovite/screen/login.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -22,9 +24,9 @@ class Realhome extends StatelessWidget {
   List<Widget> _buildScreens() {
     return [
       Accueil(),
-      CustomTopContainer(),
+      banques(),
       Container(),
-      CustomTopContainer(),
+      Download(),
       Profile()
     ];
   }
