@@ -1,13 +1,22 @@
 import 'dart:io';
 
+import 'package:exovite/data/Data.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:provider/provider.dart';
 
 class DirectoryPath extends ChangeNotifier{
   List<String> filenames = [''];
   getPath() async {
+    String? id = "0";
+    if (FirebaseAuth.instance.currentUser != null) {
+     id = FirebaseAuth.instance.currentUser?.uid;
+      //await FirebaseAuth.instance.signOut();
+    }
+    print("Lonpooooo"+id!);
     final Directory? tempDir = await getExternalStorageDirectory();
-    final filePath = Directory("${tempDir!.path}/exovite/files");
+    final filePath = Directory("${tempDir!.path}/exovite/files/${id!}");
     if (await filePath.exists()) {
       return filePath.path;
     } else {

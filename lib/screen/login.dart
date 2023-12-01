@@ -23,7 +23,11 @@ class _HomeState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return   WillPopScope(
+        onWillPop: () async {
+      // Empêche l'utilisateur de revenir en arrière à l'aide du bouton physique de retour
+      return false;
+    }, child :Scaffold(
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -100,6 +104,7 @@ class _HomeState extends State<Login> {
           ],
         ),
       ),
+    )
     );
   }
 
@@ -172,10 +177,6 @@ class _HomeState extends State<Login> {
           print('Email: $email');
           print('Mot de passe: $password');
           try {
-            if (FirebaseAuth.instance.currentUser != null) {
-              print(FirebaseAuth.instance.currentUser?.uid);
-              //await FirebaseAuth.instance.signOut();
-            }
             pr.show(msg: "En cours.....",barrierColor: Colors.black54,msgColor: Color.fromRGBO(6, 102, 142, 1),progressValueColor: Color.fromRGBO(6, 102, 142, 1) );
             await FirebaseAuth.instance.signInWithEmailAndPassword(
                 email: email,
